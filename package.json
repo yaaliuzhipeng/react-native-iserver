@@ -3,7 +3,7 @@
   "title": "React Native Webserver",
   "version": "1.0.0",
   "description": "webserver",
-  "main": "index.js",
+  "main": "index.ts",
   "files": [
     "README.md",
     "android",
