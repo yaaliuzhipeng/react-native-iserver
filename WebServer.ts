@@ -15,9 +15,11 @@ const unzip = (options: {
             zipPath,
             destinationPath,
             (success) => {
-                if(Platform.OS === 'ios') resolve(success == 1);
-                //other platform
-                resolve(true);
+                if(Platform.OS === 'ios'){
+                    resolve(success == 1);
+                    return;
+                }
+                resolve(success);
             },
             (error:string) => {
                 reject(new Error(error))
@@ -44,15 +46,34 @@ const startWithPort = (options: {
             indexFileName,
             cacheAge,
             (started) => {
-                if(Platform.OS === 'ios') resolve(started === 1);
-                //other platform
-                resolve(true);
+                if(Platform.OS === 'ios') {
+                    resolve(started === 1);
+                    return;
+                }
+                resolve(started);
             }
         )
     });
 }
 
+const stop = () => {
+    NativeWebServer.stop();
+}
+
+const isRunning = () => {
+    return new Promise((resolve, reject) => {
+        NativeWebServer.isRunning((v) => {
+            if(Platform.OS === 'ios') {
+                resolve(v === 1);
+            }
+            resolve(false);
+        })
+    })
+}
+
 export default ({
     unzip,
-    startWithPort
+    startWithPort,
+    stop,
+    isRunning
 })

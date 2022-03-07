@@ -74,6 +74,26 @@ RCT_EXPORT_METHOD(startWithPort:(NSString *) directoryPath
     });
 }
 
+RCT_EXPORT_METHOD(stop)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(self->_webServer != nil) {
+            [self->_webServer stop];
+        }
+    });
+}
 
+RCT_EXPORT_METHOD(isRunning: (RCTResponseSenderBlock) callback)
+{
+    if(_webServer == nil){
+        callback(@[@false]);
+    }else{
+        if([_webServer isRunning]) {
+            callback(@[@true]);
+        }else{
+            callback(@[@false]);
+        }
+    }
+}
 
 @end

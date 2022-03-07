@@ -1,4 +1,4 @@
 // main index.js
 
-export {default as WebServer} from './example/WebServer';
+export {default as WebServer} from './WebServer';
 
