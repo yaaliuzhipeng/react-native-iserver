@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {Platform, View} from 'react-native';
 import RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
-import WebServer from '../WebServer';
+import WebServer from '../src/WebServer';
 
 const App = (props) => {
 

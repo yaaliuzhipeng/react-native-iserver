@@ -1,7 +1,7 @@
 {
   "name": "react-native-iserver",
   "title": "React Native Webserver",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "webserver",
   "main": "index.ts",
   "files": [
@@ -9,6 +9,7 @@
     "android",
     "index.js",
     "ios",
+    "src/*",
     "react-native-webserver.podspec"
   ],
   "scripts": {
