@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, Pressable, View, Text } from 'react-native';
+import { Platform, Pressable, View, Text, StyleSheet } from 'react-native';
 import RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
-import WebServer from '../src/WebServer';
+import IServer from 'react-native-iserver';
 
 const Button = (props: {
     label: any;
@@ -19,71 +19,66 @@ const Button = (props: {
 const App = (props) => {
 
     const [url, setURL] = useState('');
-    const dir = Platform.OS === 'ios' ? RNFS.DocumentDirectoryPath : RNFS.DocumentDirectoryPath;
-    const webDir = dir + '/x';
-    const zipName =  '/x.zip';
+    const docDir = Platform.OS === 'ios' ? RNFS.DocumentDirectoryPath : RNFS.DocumentDirectoryPath;
+    const serverPath = '';
+    const port = 8080;
 
-    async function donwloadZip() {
+    async function execute() {
+        let url = ''
+        let path = ''
         let { jobId, promise: task } = RNFS.downloadFile({
-            //⚠️ Replace the fromUrl with your own file address
-            fromUrl: '',
-            toFile: dir + zipName,
+            fromUrl: url,
+            toFile: path,
         });
         try {
-            console.log('downloading zip')
-            //step 1
-            let zipExists = await RNFS.exists(`${dir}${zipName}`)
+            let zipExists = await RNFS.exists(path)
             if (!zipExists) {
                 await task
             }
-            console.log('download zip success , path => ', `${dir}${zipName}`);
+            IServer.unzip({
+                zip: path,
+                dest: serverPath,
+                onError: (e) => {
+                    //zip file is not valid
+                }
+            })
         } catch (error) {
 
         }
     }
     useEffect(() => {
-        WebServer.listen({
+        IServer.listen({
             onStart: () => {
-                console.log('开始解压');
+                //starting to unzip file
             },
             onSuccess: () => {
-                console.log('解压缩完成');
+                IServer.startWithPort({
+                    directory: serverPath,
+                    port
+                }).then(started => {
+                    console.log('the server start ' + (started ? 'success' : 'failed'))
+                })
             }
         })
-    },[])
-    function unzipZipFile() {
-        WebServer.unzip({
-            zipPath: dir + zipName,
-            destinationPath: webDir
-        })
-    }
-    async function startServer() {
-        //start server
-        let started = await WebServer.startWithPort({
-            directoryPath: webDir,
-            port: 8080
-        })
-        if(started) {
-            console.log('local server started at port : 8080');
-        }else{
-            console.log('local server start failed, check server dir');
-        }
-        setTimeout(() => {
-            setURL('http://localhost:8080')
-        }, 200);
-    }
+    }, [])
 
     return (
         <View style={{ flex: 1 }}>
             <View style={{ flex: 3 }}>
                 {url != '' && <WebView source={{ uri: url }} containerStyle={{ flex: 1 }} />}
             </View>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Button label={'下载ZIP包'} onPress={donwloadZip} />
-                <Button label={'解压缩ZIP包'} onPress={unzipZipFile} />
-                <Button label={'启动服务'} onPress={startServer} />
+            <View style={[styles.center]}>
+                <Button label={'下载解压并启动服务'} onPress={execute} />
             </View>
         </View>
     )
 }
 export default App;
+
+const styles = StyleSheet.create({
+    center: {
+        paddingVertical: 50,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+})

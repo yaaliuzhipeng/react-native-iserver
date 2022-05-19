@@ -7,15 +7,16 @@ const emitter = new NativeEventEmitter(NativeWebServer);
  * Function Part 1
  */
 const unzip = (options: {
-    zipPath: string;
-    destinationPath: string;
+    zip: string;
+    dest: string;
     onError?: (e: string) => void;
 }) => {
-    let { zipPath = '', destinationPath = '', onError } = options;
-    NativeWebServer.unzip(zipPath, destinationPath, (e) => {
+    let { zip = '', dest = '', onError } = options;
+    NativeWebServer.unzip(zip, dest, (e) => {
         if (onError) onError(e)
     })
 }
+
 const listen = (configs?: {
     onStart?: () => void;
     onSuccess?: () => void;
@@ -32,15 +33,15 @@ const listen = (configs?: {
  * Function Part 2
  */
 const startWithPort = (options: {
-    directoryPath: string;
+    directory: string;
     port: number;
     indexFileName?: string; // index.html
-    cacheAge?: number; // 3600
+    cacheAge?: number; // 3600 on ios and 0 on android
 }) => {
-    let { directoryPath, port, indexFileName = 'index.html', cacheAge = 3600 } = options;
+    let { directory, port, indexFileName = 'index.html', cacheAge = 3600 } = options;
     return new Promise((resolve, reject) => {
         NativeWebServer.startWithPort(
-            directoryPath,
+            directory,
             port,
             indexFileName,
             cacheAge,

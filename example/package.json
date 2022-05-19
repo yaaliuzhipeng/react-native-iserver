@@ -13,7 +13,7 @@
     "react": "17.0.2",
     "react-native": "0.67.3",
     "react-native-fs": "^2.19.0",
-    "react-native-webserver": "link:../",
+    "react-native-iserver": "link:../",
     "react-native-webview": "^11.17.2"
   },
   "devDependencies": {

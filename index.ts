@@ -1,4 +1,5 @@
 // main index.js
 
-export {default as WebServer} from './src/WebServer';
+import IServer from './src/iserver';
 
+export default IServer;

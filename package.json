@@ -1,8 +1,8 @@
 {
   "name": "react-native-iserver",
-  "title": "React Native Webserver",
-  "version": "1.1.0",
-  "description": "webserver",
+  "title": "React Native iserver",
+  "version": "1.1.1",
+  "description": "iserver",
   "main": "index.ts",
   "files": [
     "README.md",
@@ -10,18 +10,18 @@
     "index.js",
     "ios",
     "src/*",
-    "react-native-webserver.podspec"
+    "react-native-iserver.podspec"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yaaliuzhipeng/react-native-webserver.git",
-    "baseUrl": "https://github.com/yaaliuzhipeng/react-native-webserver"
+    "url": "git+https://github.com/yaaliuzhipeng/react-native-iserver.git",
+    "baseUrl": "https://github.com/yaaliuzhipeng/react-native-iserver"
   },
   "keywords": [
-    "react-native"
+    "react-native","GCDWebserver","local server","static server","android static server","android local server","android server","android","ios","server","web server","android web server"
   ],
   "author": {
     "name": "yaaliuzhipeng",
