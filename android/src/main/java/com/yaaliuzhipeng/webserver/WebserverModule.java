@@ -1,116 +1,127 @@
 package com.yaaliuzhipeng.webserver;
 
+
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.example.ServerClient;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import net.lingala.zip4j.exception.ZipException;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-
-import fi.iki.elonen.SimpleWebServer;
-
-class StaticServer extends SimpleWebServer {
-    public StaticServer(File rootDirectory, int port) throws IOException {
-        super("localhost", port, rootDirectory, false);
-//        mimeTypes().put();
-    }
-}
+import java.util.UUID;
 
 public class WebserverModule extends ReactContextBaseJavaModule {
 
-    private StaticServer server;
-    private final String TAG = "s1000";
+    private ReactApplicationContext context;
+    private final String ZIP_EVENT = "ZIPEVENT";
+    private final String SERVER_EVENT = "SERVEREVENT";
+    private ServerClient serverClient;
 
-    public WebserverModule(ReactApplicationContext reactApplicationContext) {
-
+    WebserverModule(ReactApplicationContext context) {
+        this.context = context;
     }
 
+    @NonNull
     @Override
     public String getName() {
         return "WebServer";
     }
 
-    //String zipPath, String destinationPath, Callback successCallback,Callback failCallback
-    @ReactMethod
-    public void unzip(String zipPath, String destinationPath, Callback successCallback, Callback failCallback) {
-
-        File df = new File(destinationPath);
-        if (!df.isDirectory() && !df.mkdirs()) {
-            failCallback.invoke("unexpected error while create destination dir");
-            return;
-        }
-        try {
-            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipPath)));
-            ZipEntry ze;
-            ze = zis.getNextEntry();
-            while(ze != null) {
-                File file = new File(destinationPath + File.separator + ze.getName());
-                if(ze.isDirectory()){
-                    Log.i(TAG, "在处理文件夹 => "+ze.getName());
-                    file.mkdirs();
-                }else{
-                    Log.i(TAG, "在处理文件 => "+ze.getName());
-                    FileOutputStream fos = new FileOutputStream(file);
-                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fos);
-                    int count;
-                    byte[] buffer = new byte[10240000];
-                    while((count = zis.read(buffer)) != -1) {
-                        bufferedOutputStream.write(buffer,0,count);
-                    }
-                    bufferedOutputStream.close();
-                    fos.close();
-                }
-                zis.closeEntry();
-                ze = zis.getNextEntry();
-            }
-            zis.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        successCallback.invoke(true);
-//            failCallback.invoke(e.getMessage());
+    public void emit(String eventName, Object data) {
+        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
     }
 
-    //String directoryPath,int port,String indexFileName,int cacheAge, Callback callback
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Set up any upstream listeners or background tasks as necessary
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+        // stop background tasks
+    }
+
     @ReactMethod
     public void startWithPort(String directoryPath, int port, String indexFileName, int cacheAge, Callback callback) {
-        File dirRoot = new File(directoryPath);
-        try {
-            if (server == null) {
-                server = new StaticServer(dirRoot, port);
-            }
-            server.start();
+        if(serverClient == null) {
+            serverClient = new ServerClient();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    serverClient.launchWithPort(port,directoryPath,indexFileName);
+                }
+            }).start();
             callback.invoke(true);
-        } catch (IOException e) {
-            Log.i("TAG", "startWithPort failed ");
+        }else{
             callback.invoke(false);
         }
     }
 
+    @ReactMethod
+    public void unzip(String zip, String dest, Callback onError) {
+        if (zip == null) {
+            onError.invoke("invalid zip file path");
+        }
+        Log.i("TAG", "unzip: "+zip+"\n"+dest+"\n");
+        UUID id = UUID.randomUUID();
+        UnzipAsyncTask task = new UnzipAsyncTask(new File(zip), dest, new UnzipCallback() {
+            @Override
+            public void onStart() {
+                WritableMap map = Arguments.createMap();
+                map.putString("event", "onStart");
+                map.putString("id", id.toString());
+                emit(ZIP_EVENT, map);
+            }
+
+            @Override
+            public void onCancelled() {
+                WritableMap map = Arguments.createMap();
+                map.putString("event", "onCancelled");
+                map.putString("id", id.toString());
+                emit(ZIP_EVENT, map);
+            }
+
+            @Override
+            public void onSuccess() {
+                WritableMap map = Arguments.createMap();
+                map.putString("event", "onSuccess");
+                map.putString("id", id.toString());
+                emit(ZIP_EVENT, map);
+            }
+
+            @Override
+            public void onError(String e) {
+                WritableMap map = Arguments.createMap();
+                map.putString("event", "onError");
+                map.putString("id", id.toString());
+                map.putString("message", e);
+                emit(ZIP_EVENT, map);
+            }
+        });
+        task.execute();
+    }
+
+    @ReactMethod
+    public void stop(){
+        if(serverClient != null){
+            serverClient.stop();
+        }
+    }
+
+    @ReactMethod
+    public void isRunning(Callback callback){
+        if(serverClient == null){
+            callback.invoke(false);
+        }else{
+            callback.invoke(serverClient.isRunning());
+        }
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-

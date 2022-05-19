@@ -1,6 +1,7 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, Platform, NativeEventEmitter } from 'react-native';
 
 const { WebServer: NativeWebServer } = NativeModules;
+const emitter = new NativeEventEmitter(NativeWebServer);
 
 /**
  * Function Part 1
@@ -8,24 +9,22 @@ const { WebServer: NativeWebServer } = NativeModules;
 const unzip = (options: {
     zipPath: string;
     destinationPath: string;
+    onError?: (e: string) => void;
 }) => {
-    let { zipPath = '', destinationPath = '' } = options;
-    return new Promise((resolve, reject) => {
-        NativeWebServer.unzip(
-            zipPath,
-            destinationPath,
-            (success) => {
-                if(Platform.OS === 'ios'){
-                    resolve(success == 1);
-                    return;
-                }
-                resolve(success);
-            },
-            (error:string) => {
-                reject(new Error(error))
-            }
-        )
-    });
+    let { zipPath = '', destinationPath = '', onError } = options;
+    NativeWebServer.unzip(zipPath, destinationPath, (e) => {
+        if (onError) onError(e)
+    })
+}
+const listen = (configs?: {
+    onStart?: () => void;
+    onSuccess?: () => void;
+    onError?: (e) => void;
+}) => {
+    const { onStart, onSuccess, onError } = (configs ?? {})
+    return emitter.addListener('ZIPEVENT', (data) => {
+        console.log('data => ', data);
+    })
 }
 
 
@@ -46,7 +45,7 @@ const startWithPort = (options: {
             indexFileName,
             cacheAge,
             (started) => {
-                if(Platform.OS === 'ios') {
+                if (Platform.OS === 'ios') {
                     resolve(started === 1);
                     return;
                 }
@@ -63,7 +62,7 @@ const stop = () => {
 const isRunning = () => {
     return new Promise((resolve, reject) => {
         NativeWebServer.isRunning((v) => {
-            if(Platform.OS === 'ios') {
+            if (Platform.OS === 'ios') {
                 resolve(v === 1);
             }
             resolve(false);
@@ -75,5 +74,6 @@ export default ({
     unzip,
     startWithPort,
     stop,
-    isRunning
+    isRunning,
+    listen
 })

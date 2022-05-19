@@ -1,6 +1,5 @@
 package com.yaaliuzhipeng.webserver;
 
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactPackage;
@@ -16,9 +15,9 @@ public class WebserverPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        ArrayList<NativeModule> modules = new ArrayList<NativeModule>();
-        modules.add(new WebserverModule(reactContext));
-        return modules;
+        ArrayList list = new ArrayList();
+        list.add(new WebserverModule(reactContext));
+        return list;
     }
 
     @NonNull

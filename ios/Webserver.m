@@ -13,37 +13,65 @@
  
  */
 
-
+NSString* zipevent = @"ZIPEVENT";
+NSString* serverevent = @"SERVEREVENT";
 @implementation Webserver
+{
+    bool hasListeners;
+}
 
 RCT_EXPORT_MODULE(WebServer)
+
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[
+        @"ZIPEVENT",
+        @"SERVEREVENT"
+    ];
+}
+
+- (void)startObserving
+{
+    hasListeners = YES;
+}
+- (void)stopObserving
+{
+    hasListeners = NO;
+}
+- (void) emit: (NSString *)eventName body:(id) body
+{
+    if (hasListeners) { // Only send events if anyone is listening
+        [self sendEventWithName:@"EventReminder" body:body];
+    }
+}
 
 /**
  part one
  */
 RCT_EXPORT_METHOD(unzip: (NSString *)zipPath
                   destinationPath: (NSString *) destinationPath
-                  successCallback: (RCTResponseSenderBlock) successCallback
-                  failCallback: (RCTResponseSenderBlock) failCallback)
+                  onError: (RCTResponseSenderBlock) onError)
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isFile = [fileManager isReadableFileAtPath:zipPath];
     if(!isFile) {
-        failCallback(@[@"target zip path is not valid"]);
+        onError(@[@"target zip path is not valid"]);
         return;
     }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BOOL done = [SSZipArchive unzipFileAtPath:zipPath toDestination:destinationPath delegate:self];
-        if(done) {
-            successCallback(@[@true]);
-        }else{
-            successCallback(@[@false]);
-        }
+        [self emit:zipevent body:@{
+            @"id": [NSUUID UUID].UUIDString,
+            @"event": @"onStart"
+        }];
+        [SSZipArchive unzipFileAtPath:zipPath toDestination:destinationPath delegate:self];
     });
 }
 - (void) zipArchiveDidUnzipArchiveAtPath:(NSString *)path zipInfo:(unz_global_info)zipInfo unzippedPath:(NSString *)unzippedPath
 {
-    //to-do
+    [self emit:zipevent body:@{
+        @"id": [NSUUID UUID].UUIDString,
+        @"event": @"onSuccess"
+    }];
 }
 - (void)zipArchiveProgressEvent:(unsigned long long)loaded total:(unsigned long long)total
 {
