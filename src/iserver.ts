@@ -24,7 +24,6 @@ const listen = (configs?: {
 }) => {
     const { onStart, onSuccess, onError } = (configs ?? {})
     return emitter.addListener('ZIPEVENT', (data: any) => {
-        console.log('data => ', data);
         if (data.event == 'onStart') {
             if (onStart) onStart({ id: data.id })
         } else if (data.event == 'onSuccess') {
