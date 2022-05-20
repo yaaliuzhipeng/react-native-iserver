@@ -1,7 +1,7 @@
 {
   "name": "react-native-iserver",
   "title": "React Native iserver",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "iserver",
   "main": "index.ts",
   "files": [

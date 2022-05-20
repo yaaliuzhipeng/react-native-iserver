@@ -18,13 +18,20 @@ const unzip = (options: {
 }
 
 const listen = (configs?: {
-    onStart?: () => void;
-    onSuccess?: () => void;
-    onError?: (e) => void;
+    onStart?: (data: any) => void;
+    onSuccess?: (data: any) => void;
+    onError?: (data: { id: string; message: string }) => void;
 }) => {
     const { onStart, onSuccess, onError } = (configs ?? {})
-    return emitter.addListener('ZIPEVENT', (data) => {
+    return emitter.addListener('ZIPEVENT', (data: any) => {
         console.log('data => ', data);
+        if (data.event == 'onStart') {
+            if (onStart) onStart({ id: data.id })
+        } else if (data.event == 'onSuccess') {
+            if (onSuccess) onSuccess({ id: data.id })
+        } else if (data.event == 'onError') {
+            if (onError) onError({ id: data.id, message: data.message })
+        }
     })
 }
 

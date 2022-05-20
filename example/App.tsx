@@ -25,18 +25,18 @@ const App = (props) => {
 
     async function execute() {
         let url = ''
-        let path = ''
+        let zipPath = ''
         let { jobId, promise: task } = RNFS.downloadFile({
             fromUrl: url,
-            toFile: path,
+            toFile: zipPath,
         });
         try {
-            let zipExists = await RNFS.exists(path)
+            let zipExists = await RNFS.exists(zipPath)
             if (!zipExists) {
                 await task
             }
             IServer.unzip({
-                zip: path,
+                zip: zipPath,
                 dest: serverPath,
                 onError: (e) => {
                     //zip file is not valid
@@ -50,6 +50,7 @@ const App = (props) => {
         IServer.listen({
             onStart: () => {
                 //starting to unzip file
+                console.log('start');
             },
             onSuccess: () => {
                 IServer.startWithPort({
@@ -57,6 +58,8 @@ const App = (props) => {
                     port
                 }).then(started => {
                     console.log('the server start ' + (started ? 'success' : 'failed'))
+                }).catch(e => {
+
                 })
             }
         })

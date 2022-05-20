@@ -67,8 +67,8 @@ async function execute() {
             await task
         }
         IServer.unzip({
-            zipPath: path,
-            destinationPath: serverPath,
+            zip: path,
+            dest: serverPath,
             onError: (e) => {
                 //zip file is not valid
             }
