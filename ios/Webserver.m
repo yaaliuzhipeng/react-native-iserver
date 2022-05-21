@@ -40,8 +40,8 @@ RCT_EXPORT_MODULE(WebServer)
 }
 - (void) emit: (NSString *)eventName body:(id) body
 {
-    if (hasListeners) { // Only send events if anyone is listening
-        [self sendEventWithName:@"EventReminder" body:body];
+    if (hasListeners) {
+        [self sendEventWithName:eventName body:body];
     }
 }
 
