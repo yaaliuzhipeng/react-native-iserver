@@ -26,7 +26,7 @@ class ServerClient {
     // Dynamic Port   : 49152 - 65535
     private var port: Int = 8999
     private var serverSocket: ServerSocket? = null
-    private var indexFile:String = "index.html"
+    private var indexFile: String = "index.html"
     private var stopRequired: Boolean = false
 
     companion object {
@@ -35,7 +35,7 @@ class ServerClient {
             for (arg in args) {
                 var narg = ""
                 narg = if (!arg.startsWith("/")) "/$arg" else arg
-                if(narg.endsWith("/")){
+                if (narg.endsWith("/")) {
                     narg = narg.removeSuffix("/")
                 }
                 path += narg
@@ -43,7 +43,8 @@ class ServerClient {
             return path
         }
     }
-    public fun isRunning():Boolean {
+
+    public fun isRunning(): Boolean {
         val closed = serverSocket?.isClosed ?: true
         return !closed
     }
@@ -53,7 +54,7 @@ class ServerClient {
         for (arg in args) {
             var narg = ""
             narg = if (!arg.startsWith("/")) "/$arg" else arg
-            if(narg.endsWith("/")){
+            if (narg.endsWith("/")) {
                 narg = narg.removeSuffix("/")
             }
             path += narg
@@ -96,7 +97,7 @@ class ServerClient {
         while (true) {
             if (stopRequired) {
                 stopRequired = false
-                if(this.serverSocket != null) this.serverSocket!!.close()
+                if (this.serverSocket != null) this.serverSocket!!.close()
                 this.serverSocket = null
                 break
             }
@@ -113,9 +114,7 @@ class ServerClient {
                 if (requestData.requestPath.origin == "/") {
                     val rootFile = File(directory!!.path)
                     if (rootFile.isDirectory) {
-                        HttpResponse(client.getOutputStream())
-                            .file(joinPath(directory!!.path, indexFile))
-
+                        HttpResponse(client.getOutputStream()).file(joinPath(directory!!.path, indexFile))
                     } else {
                         HttpResponse(client.getOutputStream()).error(500, null)
                     }
@@ -127,18 +126,21 @@ class ServerClient {
     }
 
     fun stop() {
-        if(!stopRequired) {
+        if (!stopRequired) {
             stopRequired = true
         }
     }
+
     fun launch(rootPath: String) {
         launchWithPort(this.port, rootPath)
     }
+
     fun launchWithPort(port: Int, rootPath: String) {
-        launchWithPort(port,rootPath,null)
+        launchWithPort(port, rootPath, null)
     }
-    fun launchWithPort(port: Int, rootPath: String,indexFile: String?) {
-        if(indexFile != null) {
+
+    fun launchWithPort(port: Int, rootPath: String, indexFile: String?) {
+        if (indexFile != null) {
             this.indexFile = indexFile
         }
         prepareDirectory(File(rootPath))
@@ -214,6 +216,7 @@ class HttpRequestData(request: List<String>) {
         //origin => /xxx.png?param1=load
         lateinit var path: String
         lateinit var params: String
+
         init {
             if (origin.isNotEmpty()) {
                 val sepInd = origin.indexOf("?")
@@ -369,7 +372,7 @@ class HttpResponseHeader {
         this.contentType(builder, mime.toString())
         return this
     }
-    
+
     fun image(mime: String): HttpResponseHeader {
         this.contentType(builder, mime.toString())
         return this
@@ -396,7 +399,7 @@ class HttpResponse {
             try {
                 out.write(value)
                 out.flush()
-            }catch (e:IOException){
+            } catch (e: IOException) {
                 println("client may abort connection,cannot write anymore")
             }
             out.close()
@@ -458,10 +461,29 @@ class HttpResponse {
                 0
             )
             val headerBytes = header.build().toByteArray()
-            var respBytes = ByteArray(contentBytes.size + headerBytes.size)
-            System.arraycopy(headerBytes, 0, respBytes, 0, headerBytes.size)
-            System.arraycopy(contentBytes, 0, respBytes, headerBytes.size, contentBytes.size)
-            serveBytes(respBytes)
+//            var respBytes = ByteArray(contentBytes.size + headerBytes.size)
+//            System.arraycopy(headerBytes, 0, respBytes, 0, headerBytes.size)
+//            System.arraycopy(contentBytes, 0, respBytes, headerBytes.size, contentBytes.size)
+//            serveBytes(respBytes)
+            if (out != null) {
+                try {
+                    out.write(headerBytes,0,headerBytes.size)
+                    val fin = f.inputStream()
+                    val finb = ByteArray(4096)
+                    while (true) {
+                        val count = fin.read(finb,0,4096)
+                        if(count == -1) {
+                            break
+                        }
+                        out.write(finb,0,count)
+                    }
+                    out.flush()
+                    fin.close()
+                } catch (e: IOException) {
+                    println("client may abort connection,cannot write anymore")
+                }
+                out.close()
+            }
         } else {
             //文件不存在
             error(404, null)
@@ -474,6 +496,7 @@ class HttpResponse {
  */
 
 const val ENDOFL = "\r\n"
+
 class HttpHeader {
     companion object {
         const val WWWAuthenticate = "WWW-Authenticate"
@@ -547,21 +570,25 @@ class HttpHeader {
         const val Upgrade = "Upgrade"
     }
 }
+
 class HttpMethod {
     companion object {
         const val GET = "GET"
         const val POST = "POST"
     }
 }
+
 class HttpVersion {
     companion object {
         const val one = "1.0"
         const val one_one = "1.1"
     }
 }
+
 class HttpMime {
     companion object {
         const val all = "*/*"
+
         class Image {
             companion object {
                 const val png = "image/png"
@@ -575,14 +602,16 @@ class HttpMime {
                 const val ico = "image/x-icon"
             }
         }
-        class Video{
+
+        class Video {
             companion object {
                 const val mp4 = "video/mp4"
                 const val ogg = "video/ogg"
                 const val webm = "video/webm"
             }
         }
-        class Audio{
+
+        class Audio {
             companion object {
                 const val wav = "audio/wav"
                 const val wave = "audio/wave"
@@ -590,7 +619,8 @@ class HttpMime {
                 const val ogg = "audio/ogg"
             }
         }
-        class Text{
+
+        class Text {
             companion object {
                 const val plain = "text/plain"
                 const val html = "text/html"
@@ -598,6 +628,7 @@ class HttpMime {
                 const val javascript = "text/javascript"
             }
         }
+
         class Application {
             companion object {
                 const val gzip = "application/gzip"
@@ -610,6 +641,7 @@ class HttpMime {
         }
     }
 }
+
 class CacheControlDirective {
     companion object {
         const val noCache = "no-cache"
@@ -618,6 +650,7 @@ class CacheControlDirective {
         const val Private = "private"
     }
 }
+
 class CacheControlExpire {
     companion object {
         const val maxAge = "max-age"
