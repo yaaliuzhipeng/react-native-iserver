@@ -428,7 +428,9 @@ class HttpResponse {
             when (f.extension) {
                 "html", "htm" -> header.text(HttpMime.Companion.Text.html)
                 "css" -> header.text(HttpMime.Companion.Text.css)
-                "json" -> header.text(HttpMime.Companion.Application.javascript)
+                "js" -> header.text(HttpMime.Companion.Text.javascript)
+                "json" -> header.text(HttpMime.Companion.Application.json)
+                "xml" -> header.text(HttpMime.Companion.Application.xml)
                 // Images
                 "svg" -> header.image(HttpMime.Companion.Image.svg)
                 "ico" -> header.image(HttpMime.Companion.Image.ico)
@@ -446,6 +448,10 @@ class HttpResponse {
                 // Audios
                 "wav" -> header.mime(HttpMime.Companion.Audio.wav)
                 "wave" -> header.mime(HttpMime.Companion.Audio.wave)
+                // Font
+                "ttf" -> header.mime(HttpMime.Companion.Font.ttf)
+                "woff" -> header.mime(HttpMime.Companion.Font.woff)
+                "woff2" -> header.mime(HttpMime.Companion.Font.woff2)
                 else -> {
                     hasContentType = false
                 }
@@ -585,6 +591,7 @@ class HttpVersion {
     }
 }
 
+// link: https://www.iana.org/assignments/media-types/media-types.xhtml
 class HttpMime {
     companion object {
         const val all = "*/*"
@@ -637,6 +644,17 @@ class HttpMime {
                 const val xml = "application/xml"
                 const val zip = "application/zip"
                 const val javascript = "application/javascript"
+            }
+        }
+
+        class Font {
+            companion object {
+                const val collection = "font/collection"
+                const val otf = "font/otf"
+                const val sfnt = "font/sfnt"
+                const val ttf = "font/ttf"
+                const val woff = "font/woff"
+                const val woff2 = "font/woff2"
             }
         }
     }
