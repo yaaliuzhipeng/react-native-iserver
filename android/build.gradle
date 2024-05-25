@@ -13,7 +13,8 @@ def getProperty(key) {
 
 apply plugin: 'com.android.library'
 apply plugin: "kotlin-android"
-apply plugin: "kotlin-android-extensions"
+// exception: https://github.com/yaaliuzhipeng/react-native-iserver/issues/3
+// apply plugin: "kotlin-android-extensions"
 
 buildscript {
     // buildscript is executed before everything
